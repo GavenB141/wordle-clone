@@ -1,0 +1,6 @@
+/.routify/
+/node_modules/
+/public/build/
+/scripts/
+
+.DS_Store
