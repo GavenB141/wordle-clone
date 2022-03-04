@@ -1,14 +1,17 @@
 <script>
 	import Key from './Key.svelte';
 	import Letter from './Letter.svelte';
+	import Alert from './Alert.svelte';
 	import Keydown from "svelte-keydown";
 
-	let word = "robot".toUpperCase();
+	let dictionary = ["LASER", "DROID", "ROBOT", "FIRST", "SCREW", "MOTOR", "WHEEL", "CUBEY", "BUILD", "CLIMB", "SHOOT", "DRIVE", "SCORE", "POWER", "POINT", "CARGO", "INDEX", "WIRES", "BOLTS", "GEARS", "FRAME", "METAL", "SCOUT", "TEAMS", "MEDIA", "RAVEN", "LIGHT", "VIDEO", "RULES", "TECHS", "CODED", "TOOLS", "OILED", "HOODS", "DRILL", "CHEER", "COACH", "FINAL", "CHAMP", "AXLES", "BEAMS", "STATS", "FOULS", "BLADE", "RUNGS", "ROTOR", "SHEET", "BLOCK", "REACT", "SERVO", "DEBUG", "ERROR", "VALVE", "BALLS", "SHAFT", "TESTS", "WIRED", "TUBES", "PILOT", "ROVER", "DRONE", "GIZMO", "PROBE", "CYBER", "MICRO", "JOINT", "CHAIN", "LINKS", "GOALS", "SHIFT", "PIVOT", "SWING"];
+
+	//let word = "robot".toUpperCase();
+	let word = dictionary[Math.floor(Math.random() * dictionary.length)];
 	let len = word.length;
 	let wordArray = word.split("");
 	let guesses = 6;
 	let done = false;
-
 
 	//colors
 	let dk= "gray-300";  //default keys
@@ -17,16 +20,18 @@
 	let c = "green-500"; //correct
 	let p = "amber-400"; //partial
 
+	let opacity = "100";
+
 	let keyboard = [
 		["Q","W","E","R","T","Y","U","I","O","P"],
 		["A","S","D","F","G","H","J","K","L"],
-		["BACK","Z","X","C","V","B","N","M","ENTER"]
+		["ENTER","Z","X","C","V","B","N","M","BACK"]
 	];
 
 	let keyColors = {
 		"Q":dk,"W":dk,"E":dk,"R":dk,"T":dk,"Y":dk,"U":dk,"I":dk,"O":dk,"P":dk,
 		"A":dk,"S":dk,"D":dk,"F":dk,"G":dk,"H":dk,"J":dk,"K":dk,"L":dk,
-		"BACK":dk,"Z":dk,"X":dk,"C":dk,"V":dk,"B":dk,"N":dk,"M":dk,"ENTER":dk
+		"ENTER":dk,"Z":dk,"X":dk,"C":dk,"V":dk,"B":dk,"N":dk,"M":dk,"BACK":dk
 	};
 
 	let board = [];
@@ -89,17 +94,40 @@
 			//Get the full answer and record the number of each letter for proper coloring, and check for green letters
 			let answer = "";
 			for(let j = 0; j < len; j++){
+				board[cursor.y][j].value = board[cursor.y][j].value.toUpperCase();
 				let value = board[cursor.y][j].value;
 				answer += value;
 				numLetters[wordArray[j]].word += 1;
+			}
 
+			let validWord=false;
+
+			for(let j = 0; j < dictionary.length; j++){
+				if(answer == dictionary[j]){
+					validWord=true;
+				}
+			}
+
+			if(answer == word){
+				validWord=true;
+				done=true;
+				opacity="25";
+			}
+
+			if(!validWord){
+				cursor.x = 0;
+				for(let j = 0; j < len; j++) board[cursor.y][j].value = "";
+				return;
+			}
+
+			for(let j = 0; j < len; j++){
+				let value = board[cursor.y][j].value;
 				if(wordArray[j] == value){
 					numLetters[value].answer += 1;
 					keyColors[value] = c;
 					board[cursor.y][j].color = c;
 				}
 			}
-			console.log(numLetters['M'].word);
 
 			//Check for yellow letters
 			for(let a = 0; a < len; a++){
@@ -127,20 +155,22 @@
 				}	
 			}
 
-			//Check if answer is correct
-			if(answer == word) done = true;
-
 			cursor.y += 1;
 			cursor.x = 0;
+
+			if(cursor.y >= 5){
+				opacity = "25";
+				done = true;
+			}
 		}
 	}
 </script>
 
-<center class="">
+<center class="opacity-{opacity}">
 
 	<!--Make sure tailwind classes passed through props get recognized;-->
-	<div hidden class="bg-gray-300">
-		<div class="bg-gray-500 border-gray-500"/>
+	<div hidden class="bg-gray-300 opacity-100">
+		<div class="bg-gray-500 border-gray-500 opacity-25"/>
 		<div class="bg-green-500 border-green-500"/>
 		<div class="bg-amber-400 border-amber-400"/>
 	</div>
@@ -168,14 +198,33 @@
 	/>
 
 	<!--Create Digital Keyboard-->
-	{#each keyboard as row}
-		<div>
-			{#each row as key}
-				<Key value={key} color={keyColors[key]} on:input={handleInput}/>
+	<div class="flex flex-col" style="max-width:472px">
+		<div class="flex-nowrap">
+			{#each keyboard[0] as key}
+				<Key value={key} color={keyColors[key]} width="26.6px" on:input={handleInput}/>
 			{/each}
 		</div>
-	{/each}
+		<div class="flex-nowrap">
+			{#each keyboard[1] as key}
+				<Key value={key} color={keyColors[key]} width="30px" on:input={handleInput}/>	
+			{/each}
+		</div>
+		<div class="flex-nowrap">
+			{#each keyboard[2] as key}
+				{#if key == "BACK"}
+					<Key value={key} color={keyColors[key]} width="42px" on:input={handleInput}/>	
+				{:else if key == "ENTER"}
+					<Key value={key} color={keyColors[key]} width="50px" on:input={handleInput}/>	
+				{:else}
+					<Key value={key} color={keyColors[key]} width="25.4px" on:input={handleInput}/>	
+				{/if}
+			{/each}
+		</div>
+	</div>
+
 </center>
+
+<Alert show={done} {word}/>
 
 <style lang="postcss" global>
 	@tailwind base;

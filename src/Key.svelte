@@ -5,6 +5,7 @@
 
     export let value;
     export let color;
+	export let width;
 
 	function sendInput() {
 		dispatch('input', {
@@ -13,6 +14,6 @@
 	}
 </script>
 
-<button class="border-black bg-{color} rounded py-2 px-3 m-0.5 font-semibold" on:click={sendInput}>
+<button class="border-black bg-{color} rounded py-2 m-0.5 text-sm font-bold" on:click={sendInput} style="width:{width}">
     {value}
 </button>
